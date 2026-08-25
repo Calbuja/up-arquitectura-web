@@ -49,5 +49,12 @@ curl -i http://localhost:3000/otra-cosa
 ├── .gitignore
 ├── README.md
 ├── INFORME.md     # Informe del Módulo 1
+├── EVIDENCIA.md   # Capturas y salidas de las pruebas
+├── evidencia/     # Capturas de pantalla
 └── server.js      # Servidor HTTP del Ejercicio 3
 ```
+
+## Documentación de la entrega
+
+- [INFORME.md](INFORME.md) — entorno, método de instalación y dificultades encontradas
+- [EVIDENCIA.md](EVIDENCIA.md) — capturas de pantalla y salidas de los comandos de prueba
