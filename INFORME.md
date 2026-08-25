@@ -1,4 +1,4 @@
-# Informe — Actividad Individual Módulo 1
+# Informe — Actividad 1
 
 **Materia:** Arquitectura Web
 **Actividad:** Servidor HTTP con Node.js

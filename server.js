@@ -1,5 +1,5 @@
 // Servidor HTTP mínimo construido únicamente con el módulo nativo 'http' de Node.js.
-// Trabajo Práctico Integrador - Arquitectura Web - Módulo 1
+// Trabajo Práctico Integrador - Arquitectura Web - Actividad 1
 
 // El módulo 'http' viene incluido en Node.js: no hace falta instalarlo con npm.
 // Nos da la capa más baja para hablar HTTP, sin la abstracción de un framework.

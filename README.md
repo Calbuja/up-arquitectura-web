@@ -4,7 +4,7 @@ Repositorio único del Trabajo Práctico Integrador de la materia **Arquitectura
 (Universidad de Palermo). Se va a ir completando a lo largo de la cursada con el
 backend, el frontend y los demás artefactos que pidan las actividades de cada módulo.
 
-## Módulo 1 — Servidor HTTP con Node.js
+## Actividad 1 — Servidor HTTP con Node.js
 
 Servidor HTTP mínimo implementado **exclusivamente** con el módulo nativo `http` de
 Node.js, sin frameworks. Expone dos rutas:
@@ -48,7 +48,7 @@ curl -i http://localhost:3000/otra-cosa
 .
 ├── .gitignore
 ├── README.md
-├── INFORME.md     # Informe del Módulo 1
+├── INFORME.md     # Informe de la Actividad 1
 ├── EVIDENCIA.md   # Capturas y salidas de las pruebas
 ├── evidencia/     # Capturas de pantalla
 └── server.js      # Servidor HTTP del Ejercicio 3

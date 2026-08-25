@@ -1,4 +1,4 @@
-# Evidencia de pruebas — Módulo 1
+# Evidencia de pruebas — Actividad 1
 
 Salida real de los comandos ejecutados contra el servidor.
 
