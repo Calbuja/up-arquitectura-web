@@ -19,3 +19,6 @@ Thumbs.db
 
 # Archivos de prueba generados
 *.bin
+
+# Paquete de entrega (duplica el contenido del repo)
+*.zip
