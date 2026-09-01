@@ -653,38 +653,48 @@ Los códigos `405` y `500`, por transversales, no se repiten en cada fila (ver s
 
 ## 5. Verificación del contrato
 
-Los códigos de estado de esta documentación no se listaron a partir de una lectura del
-código: **cada uno fue provocado con un request real** contra la implementación. El
-procedimiento fue:
+Los códigos de estado de esta documentación no se listaron *únicamente* a partir de la
+lectura del código: **cada uno se comprobó ejecutándolo**. El procedimiento fue:
 
 1. Se recorrieron los archivos de rutas, controladores, servicios y middlewares para
-   identificar todos los códigos alcanzables en cada endpoint.
+   identificar qué códigos son alcanzables en cada endpoint.
 2. Se construyó un caso de prueba por cada par *(endpoint, código de estado)*, partiendo
    siempre del mismo set de datos inicial.
-3. Se ejecutaron los 82 casos comparando el código obtenido contra el declarado.
+3. Se ejecutaron los 82 casos resultantes, comparando el código obtenido contra el
+   declarado.
 
-La primera corrida detectó **tres discrepancias** entre el contrato pretendido y el
-comportamiento real, que fueron corregidas en la implementación:
+Ese contraste es el que le da valor al procedimiento: la primera corrida detectó **tres
+discrepancias** entre el contrato que se pretendía documentar y el comportamiento real.
+Las tres se corrigieron en la implementación:
 
 | Endpoint | Caso | Declarado | Obtenido | Diagnóstico y corrección |
 |---|---|---|---|---|
-| `GET /ordenes` | `?desde=xxx` | `400` | `500` | Una fecha no interpretable llegaba sin validar hasta el filtrado, donde `toISOString()` lanzaba una excepción no contemplada. Se agregó la validación previa del parámetro, que ahora devuelve `400` indicando el campo |
-| `GET /ordenes` | `?hasta=xxx` | `400` | `500` | Mismo caso que el anterior |
-| `POST /api/v1` | Verbo no soportado | `405` | `404` | El índice de la API no tenía declarados sus verbos admitidos, por lo que respondía `404` donde el resto de la API responde `405`. Se unificó el comportamiento |
+| `GET /ordenes` | `?desde=xxx` | `400` | `500` | `new Date('xxx')` no lanza ninguna excepción: devuelve una fecha inválida, que aparenta ser un valor utilizable. El error recién se producía más adelante, al invocar `toISOString()` sobre ella para comparar el rango, y como en ese punto nadie lo esperaba terminaba escalando a `500`. Se agregó la validación del parámetro *antes* de tocar los datos: ahora devuelve `400` indicando el campo |
+| `GET /ordenes` | `?hasta=xxx` | `400` | `500` | El otro extremo del mismo filtro de rango, con idéntica causa y corrección |
+| `POST /api/v1` | Verbo no soportado | `405` | `404` | El índice era el único recurso de la API que no declaraba sus verbos admitidos, por lo que respondía `404` donde todos los demás responden `405`. Se unificó el comportamiento |
 
-Devolver `500` ante una fecha mal escrita era un defecto y no una decisión: le comunica al
-cliente que el servidor falló, cuando en realidad el dato enviado era inválido y él puede
-corregirlo. Un error de validación debe reflejarse en el rango `4xx`.
+**Por qué eran defectos y no decisiones de diseño.** Un `500` le comunica al cliente que el
+servidor falló y que no hay nada que él pueda hacer al respecto. Pero una fecha mal escrita
+es un dato inválido que el cliente sí puede corregir, y eso pertenece al rango `4xx`:
+devolver `500` lo mandaba a buscar el problema en el lugar equivocado. El caso del `404` es
+más leve, pero rompía la uniformidad del contrato: un cliente que ya había aprendido que
+esta API responde `405` ante un verbo no admitido recibía otra cosa en un único endpoint.
 
 Tras las correcciones, los **82 casos coinciden** con lo documentado.
 
-### Cómo se hizo repetible
+### Cómo se hizo repetible la verificación
 
-Los casos se incorporaron al código del backend como una suite de pruebas automatizadas
-(`tests/contrato-api.test.js`), ejecutable con `npm test`. Cada caso afirma un código de
-estado de este documento, de modo que si alguien modifica un endpoint sin actualizar la
-documentación, la suite se pone en rojo. La suite completa contiene **178 pruebas**, de
-las cuales **88 corresponden a la verificación del contrato**.
+Los 82 casos no quedaron como una comprobación hecha una sola vez: se incorporaron al
+código del backend como una suite de pruebas automatizadas (`tests/contrato-api.test.js`),
+ejecutable con `npm test`. Cada prueba afirma uno de los códigos de estado declarados en
+estas páginas, de modo que **si el comportamiento de un endpoint cambia, la suite falla y
+señala que esta documentación quedó desactualizada**.
+
+Al pasarlos a suite se agregaron seis casos que la comprobación inicial no cubría —el `405`
+del health check, un rango de fechas válido, el `405` de los cuatro reportes y una
+verificación de que todos los errores comparten la misma forma—, con lo cual la suite de
+contrato contiene **88 pruebas**. Sumadas a las del resto del backend, el proyecto tiene
+**178 pruebas**.
 
 > **Sobre el código del backend.** La implementación que este documento describe —incluida
 > la suite de verificación— se incorporará a este repositorio junto con el Trabajo Práctico

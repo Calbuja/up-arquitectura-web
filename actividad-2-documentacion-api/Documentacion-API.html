@@ -1318,24 +1318,25 @@ verbo/código de estado, en lugar de devolver <code>200 OK</code> para todo:</p>
 
 <h2 class="titulo-seccion"><span>5.</span>Verificación del contrato</h2>
 
-<p>Los códigos de estado de este documento no se listaron a partir de una lectura del código, sino
-que <strong>cada uno fue provocado con un request real</strong> contra la implementación y se
-verificó la respuesta obtenida. El procedimiento fue el siguiente:</p>
+<p>Los códigos de estado de este documento no se listaron <em>únicamente</em> a partir de la lectura
+del código: <strong>cada uno se comprobó ejecutándolo</strong>. El procedimiento fue el siguiente:</p>
 
 <ol>
     <li>Se recorrieron los archivos de rutas, controladores, servicios y middlewares para
-        identificar todos los códigos alcanzables en cada endpoint.</li>
+        identificar qué códigos son alcanzables en cada endpoint.</li>
     <li>Se construyó un caso de prueba por cada par <em>(endpoint, código de estado)</em>,
         partiendo siempre del mismo set de datos inicial.</li>
-    <li>Se ejecutaron los 82 casos comparando el código obtenido contra el declarado.</li>
+    <li>Se ejecutaron los 82 casos resultantes, comparando el código obtenido contra el
+        declarado.</li>
 </ol>
 
-<p>La primera corrida detectó <strong>tres discrepancias</strong> entre el contrato pretendido y el
-comportamiento real, que fueron corregidas en la implementación:</p>
+<p>Ese contraste es el que le da valor al procedimiento: la primera corrida detectó
+<strong>tres discrepancias</strong> entre el contrato que se pretendía documentar y el
+comportamiento real. Las tres se corrigieron en la implementación:</p>
 
 <table>
     <thead>
-        <tr><th style="width:40mm">Endpoint</th><th style="width:38mm">Caso</th><th style="width:20mm">Declarado</th><th style="width:20mm">Obtenido</th><th>Diagnóstico y corrección</th></tr>
+        <tr><th style="width:31mm">Endpoint</th><th style="width:27mm">Caso</th><th style="width:19mm">Declarado</th><th style="width:18mm">Obtenido</th><th>Diagnóstico y corrección</th></tr>
     </thead>
     <tbody>
         <tr>
@@ -1343,47 +1344,57 @@ comportamiento real, que fueron corregidas en la implementación:</p>
             <td class="mono">?desde=xxx</td>
             <td class="sc sc--4xx">400</td>
             <td class="sc sc--5xx">500</td>
-            <td>Una fecha no interpretable llegaba sin validar hasta el filtrado, donde
-                <code>toISOString()</code> lanzaba una excepción no contemplada. Se agregó la
-                validación previa del parámetro, que ahora devuelve <code>400</code> indicando el
-                campo</td>
+            <td><code>new Date('xxx')</code> no lanza ninguna excepción: devuelve una fecha
+                inválida, que aparenta ser un valor utilizable. El error recién se producía más
+                adelante, al invocar <code>toISOString()</code> sobre ella para comparar el rango, y
+                como en ese punto nadie lo esperaba terminaba escalando a <code>500</code>. Se
+                agregó la validación del parámetro <em>antes</em> de tocar los datos: ahora devuelve
+                <code>400</code> indicando el campo</td>
         </tr>
         <tr>
             <td class="mono">GET /ordenes</td>
             <td class="mono">?hasta=xxx</td>
             <td class="sc sc--4xx">400</td>
             <td class="sc sc--5xx">500</td>
-            <td>Mismo caso que el anterior</td>
+            <td>El otro extremo del mismo filtro de rango, con idéntica causa y corrección</td>
         </tr>
         <tr>
             <td class="mono">POST /api/v1</td>
             <td>Verbo no soportado</td>
             <td class="sc sc--4xx">405</td>
             <td class="sc sc--4xx">404</td>
-            <td>El índice de la API no tenía declarados sus verbos admitidos, por lo que respondía
-                <code>404</code> donde el resto de la API responde <code>405</code>. Se unificó el
-                comportamiento</td>
+            <td>El índice era el único recurso de la API que no declaraba sus verbos admitidos, por
+                lo que respondía <code>404</code> donde todos los demás responden <code>405</code>.
+                Se unificó el comportamiento</td>
         </tr>
     </tbody>
 </table>
 
 <div class="nota">
-    Devolver <code>500</code> ante una fecha mal escrita era un defecto y no una decisión: le
-    comunica al cliente que el servidor falló, cuando en realidad el dato enviado era inválido y
-    él puede corregirlo. Un error de validación debe reflejarse en el rango <code>4xx</code>.
+    <strong>Por qué eran defectos y no decisiones de diseño.</strong> Un <code>500</code> le
+    comunica al cliente que el servidor falló y que no hay nada que él pueda hacer al respecto.
+    Pero una fecha mal escrita es un dato inválido que el cliente sí puede corregir, y eso
+    pertenece al rango <code>4xx</code>: devolver <code>500</code> lo mandaba a buscar el problema
+    en el lugar equivocado. El caso del <code>404</code> es más leve, pero rompía la uniformidad
+    del contrato: un cliente que ya había aprendido que esta API responde <code>405</code> ante un
+    verbo no admitido recibía otra cosa en un único endpoint.
 </div>
 
 <p>Tras las correcciones, los <strong>82 casos coinciden</strong> con lo documentado.</p>
 
 <h3>5.1. Cómo se hizo repetible la verificación</h3>
 
-<p>Los 82 casos no quedaron como una comprobación puntual: se incorporaron al código del backend
-como una suite de pruebas automatizadas (<code>tests/contrato-api.test.js</code>), ejecutable con
-<code>npm test</code>. Cada caso afirma un código de estado de este documento, de modo que si
-alguien modifica un endpoint sin actualizar la documentación, la suite se pone en rojo.</p>
+<p>Los 82 casos no quedaron como una comprobación hecha una sola vez: se incorporaron al código del
+backend como una suite de pruebas automatizadas (<code>tests/contrato-api.test.js</code>),
+ejecutable con <code>npm test</code>. Cada prueba afirma uno de los códigos de estado declarados en
+estas páginas, de modo que <strong>si el comportamiento de un endpoint cambia, la suite falla y
+señala que esta documentación quedó desactualizada</strong>.</p>
 
-<p>La suite completa del backend contiene <strong>178 pruebas</strong>, de las cuales
-<strong>88 corresponden a la verificación del contrato</strong> documentado en estas páginas.</p>
+<p>Al pasarlos a suite se agregaron seis casos que la comprobación inicial no cubría —el
+<code>405</code> del health check, un rango de fechas válido, el <code>405</code> de los cuatro
+reportes y una verificación de que todos los errores comparten la misma forma—, con lo cual la
+suite de contrato contiene <strong>88 pruebas</strong>. Sumadas a las del resto del backend, el
+proyecto tiene <strong>178 pruebas</strong>.</p>
 
 <div class="nota">
     <strong>Sobre el código del backend.</strong> La implementación que este documento describe
