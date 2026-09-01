@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+<meta charset="UTF-8">
+<title>Documentación de la API — Taller Mecánico</title>
+<style>
+    @page { size: A4; margin: 17mm 15mm 16mm 15mm; }
+
+    :root {
+        --tinta: #16202e;
+        --tinta-suave: #5a6677;
+        --linea: #d8dee7;
+        --linea-fuerte: #b3bdcb;
+        --acento: #1d4ed8;
+        --fondo-sutil: #f5f7fa;
+        --ok: #14663a;
+        --cliente: #9a5b00;
+        --servidor: #a01c1c;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+        margin: 0;
+        /* el documento esta pensado para papel: fondo blanco explicito, para que
+           un visor con tema oscuro no lo reinterprete */
+        background: #ffffff;
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        font-size: 9.6pt;
+        line-height: 1.5;
+        color: var(--tinta);
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    /* Lectura en pantalla: se centra el bloque y se le da respiro lateral.
+       No aplica a la impresion, donde el ancho lo fija @page. */
+    @media screen {
+        body {
+            max-width: 190mm;
+            margin-inline: auto;
+            padding: 10mm 8mm;
+        }
+        .portada { height: auto; padding: 30mm 0; }
+    }
+
+    h1, h2, h3, h4 { line-height: 1.25; margin: 0; }
+
+    code, pre, .mono {
+        font-family: "SF Mono", Menlo, Consolas, "Courier New", monospace;
+    }
+
+    /* ---------- portada ---------- */
+
+    .portada {
+        height: 250mm;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        page-break-after: always;
+        text-align: center;
+    }
+
+    .portada__materia {
+        font-size: 10pt;
+        letter-spacing: .16em;
+        text-transform: uppercase;
+        color: var(--tinta-suave);
+        font-weight: 700;
+    }
+
+    .portada__titulo {
+        font-size: 27pt;
+        font-weight: 700;
+        letter-spacing: -.02em;
+        margin: 10mm 0 3mm;
+    }
+
+    .portada__subtitulo {
+        font-size: 13pt;
+        color: var(--tinta-suave);
+        font-weight: 400;
+    }
+
+    .portada__regla {
+        width: 55mm;
+        height: 2.5px;
+        background: var(--acento);
+        margin: 12mm auto;
+    }
+
+    .portada__datos {
+        display: inline-block;
+        text-align: left;
+        font-size: 10.5pt;
+        line-height: 2;
+    }
+
+    .portada__datos dt {
+        display: inline-block;
+        width: 38mm;
+        color: var(--tinta-suave);
+        font-weight: 600;
+    }
+
+    .portada__datos dd { display: inline; margin: 0; font-weight: 600; }
+    .portada__datos div { display: block; }
+
+    .portada__pie {
+        margin-top: 18mm;
+        font-size: 9pt;
+        color: var(--tinta-suave);
+    }
+
+    /* ---------- estructura ---------- */
+
+    .seccion { page-break-before: always; }
+
+    h2.titulo-seccion {
+        font-size: 15pt;
+        padding-bottom: 2.5mm;
+        border-bottom: 2px solid var(--acento);
+        margin-bottom: 5mm;
+    }
+
+    h2.titulo-seccion span {
+        color: var(--acento);
+        margin-right: 3mm;
+    }
+
+    h3 {
+        font-size: 11.5pt;
+        margin: 7mm 0 2.5mm;
+        color: var(--tinta);
+    }
+
+    h4 {
+        font-size: 9.4pt;
+        margin: 4mm 0 1.5mm;
+        text-transform: uppercase;
+        letter-spacing: .07em;
+        color: var(--tinta-suave);
+    }
+
+    p { margin: 0 0 2.5mm; }
+    ul { margin: 0 0 3mm; padding-left: 5mm; }
+    li { margin-bottom: 1mm; }
+
+    .nota {
+        background: var(--fondo-sutil);
+        border-left: 3px solid var(--acento);
+        padding: 2.5mm 3.5mm;
+        margin: 3mm 0;
+        font-size: 9pt;
+    }
+
+    .nota strong { color: var(--acento); }
+
+    /* ---------- tablas ---------- */
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 8.8pt;
+        margin: 2mm 0 4mm;
+    }
+
+    th, td {
+        text-align: left;
+        padding: 1.5mm 2.2mm;
+        border-bottom: 1px solid var(--linea);
+        vertical-align: top;
+    }
+
+    thead th {
+        background: var(--fondo-sutil);
+        border-bottom: 1.5px solid var(--linea-fuerte);
+        font-size: 8pt;
+        text-transform: uppercase;
+        letter-spacing: .05em;
+        color: var(--tinta-suave);
+    }
+
+    tbody tr:last-child td { border-bottom: 1px solid var(--linea-fuerte); }
+
+    .col-codigo { width: 20mm; }
+    .col-verbo  { width: 18mm; }
+    .col-ruta   { width: 62mm; }
+
+    /* ---------- bloques de endpoint ---------- */
+
+    .endpoint {
+        page-break-inside: avoid;
+        margin: 0 0 6mm;
+        border: 1px solid var(--linea);
+        border-radius: 2mm;
+        overflow: hidden;
+    }
+
+    .endpoint__cabecera {
+        background: var(--fondo-sutil);
+        border-bottom: 1px solid var(--linea);
+        padding: 2.5mm 3.5mm;
+        display: flex;
+        align-items: baseline;
+        gap: 3mm;
+    }
+
+    .endpoint__numero {
+        font-size: 8.5pt;
+        font-weight: 700;
+        color: var(--tinta-suave);
+        min-width: 7mm;
+    }
+
+    .verbo {
+        display: inline-block;
+        font-family: "SF Mono", Menlo, Consolas, monospace;
+        font-size: 8pt;
+        font-weight: 700;
+        letter-spacing: .04em;
+        color: #fff;
+        padding: .7mm 2mm;
+        border-radius: 1mm;
+        min-width: 16mm;
+        text-align: center;
+    }
+
+    .verbo--get    { background: #1d4ed8; }
+    .verbo--post   { background: #14663a; }
+    .verbo--put    { background: #9a5b00; }
+    .verbo--patch  { background: #7c3aed; }
+    .verbo--delete { background: #a01c1c; }
+
+    .endpoint__ruta {
+        font-family: "SF Mono", Menlo, Consolas, monospace;
+        font-size: 10pt;
+        font-weight: 700;
+    }
+
+    .endpoint__ruta em {
+        font-style: normal;
+        color: var(--acento);
+    }
+
+    .endpoint__cuerpo { padding: 3mm 3.5mm 1mm; }
+
+    .propiedades {
+        font-size: 8.2pt;
+        color: var(--tinta-suave);
+        margin-bottom: 2.5mm;
+    }
+
+    .propiedades b { color: var(--tinta); }
+
+    .endpoint table { margin-bottom: 2.5mm; }
+
+    /* ---------- status codes ---------- */
+
+    .sc {
+        font-family: "SF Mono", Menlo, Consolas, monospace;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .sc--2xx { color: var(--ok); }
+    .sc--4xx { color: var(--cliente); }
+    .sc--5xx { color: var(--servidor); }
+
+    /* ---------- código ---------- */
+
+    pre {
+        background: var(--fondo-sutil);
+        border: 1px solid var(--linea);
+        border-radius: 1.5mm;
+        padding: 2.5mm 3mm;
+        font-size: 8.2pt;
+        line-height: 1.45;
+        margin: 1.5mm 0 3mm;
+        white-space: pre-wrap;
+        word-break: break-word;
+        page-break-inside: avoid;
+    }
+
+    p code, td code, li code {
+        background: var(--fondo-sutil);
+        border: 1px solid var(--linea);
+        border-radius: 1mm;
+        padding: .2mm 1mm;
+        font-size: 8.4pt;
+    }
+
+    .diagrama {
+        font-family: "SF Mono", Menlo, Consolas, monospace;
+        font-size: 8.4pt;
+        line-height: 1.4;
+        background: var(--fondo-sutil);
+        border: 1px solid var(--linea);
+        border-radius: 1.5mm;
+        padding: 3mm;
+        margin: 2mm 0 4mm;
+        white-space: pre;
+        page-break-inside: avoid;
+    }
+</style>
+</head>
+
+<body>
+
+<!-- ==================== PORTADA ==================== -->
+
+<section class="portada">
+    <p class="portada__materia">Universidad de Palermo &middot; Departamento de Ingeniería</p>
+    <p class="portada__materia" style="margin-top:2mm">Arquitectura Web</p>
+
+    <h1 class="portada__titulo">Documentación de la API</h1>
+    <p class="portada__subtitulo">Sistema de gestión de un taller mecánico</p>
+
+    <div class="portada__regla"></div>
+
+    <dl class="portada__datos">
+        <div><dt>Actividad</dt><dd>Individual — Módulo 2</dd></div>
+        <div><dt>Alumno</dt><dd>Cristian Albuja</dd></div>
+        <div><dt>Legajo</dt><dd>0144050</dd></div>
+        <div><dt>Profesor</dt><dd>Ing. Diego Marafetti</dd></div>
+        <div><dt>Endpoints documentados</dt><dd>22</dd></div>
+    </dl>
+
+    <p class="portada__pie">
+        Todos los códigos de estado declarados en este documento fueron verificados<br>
+        ejecutando un request real contra la implementación.
+    </p>
+</section>
+
+<!-- ==================== EJERCICIO 1 ==================== -->
+
+<section class="seccion">
+
+<h2 class="titulo-seccion"><span>1.</span>Descripción general del backend</h2>
+
+<h3>1.1. Dominio y problema que resuelve</h3>
+
+<p>El backend implementa la gestión operativa de un <strong>taller mecánico</strong>. El problema
+que resuelve es el seguimiento del trabajo que el taller realiza sobre las unidades de sus
+clientes: qué vehículos atiende, qué reparaciones se les hicieron, qué repuestos y horas de mano
+de obra consumió cada reparación, cuánto se facturó y qué unidades están pendientes de un nuevo
+service.</p>
+
+<p>Antes de un sistema así, esa información vive en papel o en una planilla: no hay forma
+confiable de saber cuánto costó mantener una unidad a lo largo del tiempo, ni de detectar qué
+clientes deberían volver al taller. El backend expone esos datos como recursos consultables y
+modificables mediante una API RESTful.</p>
+
+<h3>1.2. Modelo de recursos</h3>
+
+<p>El dominio se estructura en dos recursos principales y un sub-recurso:</p>
+
+<div class="diagrama">  Vehículo  ────&lt;  Orden de trabajo  ────&lt;  Ítem
+  (recurso maestro)  (recurso transaccional)   (repuesto / mano de obra)
+        │                     │
+        │                     └──&gt;  Reportes (recursos derivados, solo lectura)
+        │
+        └── un vehículo tiene muchas órdenes a lo largo de su vida</div>
+
+<ul>
+    <li><strong>Vehículo</strong> — la unidad que atiende el taller, identificada por su patente.
+        Es el recurso maestro y sobre él se implementa el ABM completo.</li>
+    <li><strong>Orden de trabajo</strong> — el ingreso de un vehículo al taller por un trabajo
+        determinado. Tiene un ciclo de vida propio y es el recurso que alimenta los reportes.</li>
+    <li><strong>Ítem</strong> — cada repuesto colocado o cada tarea de mano de obra dentro de una
+        orden. No existe fuera de su orden, por eso se modela como sub-recurso anidado.</li>
+    <li><strong>Reportes</strong> — recursos derivados que se calculan a demanda a partir de los
+        anteriores. No se almacenan y solo admiten lectura.</li>
+</ul>
+
+<h3>1.3. Ciclo de vida de una orden de trabajo</h3>
+
+<p>Varios de los códigos <code>409 Conflict</code> documentados más adelante se explican por esta
+máquina de estados. Cualquier transición que no figure en el diagrama es rechazada:</p>
+
+<div class="diagrama">                    ┌──────────────┐
+      alta ───────► │  PENDIENTE   │
+                    └──────┬───────┘
+                           │
+              ┌────────────┴────────────┐
+              ▼                         ▼
+       ┌──────────────┐          ┌──────────────┐
+       │  EN_PROCESO  │ ───────► │  CANCELADA   │  (final)
+       └──────┬───────┘          └──────────────┘
+              │                         ▲
+              ▼                         │
+       ┌──────────────┐                 │
+       │   CERRADA    │  (final)  ──────┘  también desde PENDIENTE
+       └──────────────┘</div>
+
+<p>Dos reglas asociadas al cierre condicionan el contrato:</p>
+
+<ul>
+    <li>Una orden <strong>no puede cerrarse sin ítems cargados</strong>: no se factura una orden
+        vacía. El intento devuelve <code>409</code>.</li>
+    <li>Al cerrarse, si el kilometraje de ingreso de la orden es mayor al registrado en el
+        vehículo, <strong>el kilometraje del vehículo se actualiza</strong>. Es el dato más fresco
+        que tiene el taller sobre esa unidad.</li>
+</ul>
+
+<h3>1.4. Datos por defecto</h3>
+
+<p>Al inicializarse, la aplicación carga automáticamente un set de datos de prueba: 8 vehículos
+(7 activos y 1 dado de baja) y 10 órdenes de trabajo distribuidas entre los cuatro estados, con
+sus ítems. Todos los ejemplos de este documento están tomados de ese set.</p>
+
+</section>
+
+<!-- ==================== CONVENCIONES ==================== -->
+
+<section class="seccion">
+
+<h2 class="titulo-seccion"><span>2.</span>Convenciones del contrato</h2>
+
+<p>Las reglas de esta sección aplican a <strong>todos</strong> los endpoints. Documentarlas una
+sola vez acá evita repetirlas veintidós veces en la sección siguiente.</p>
+
+<h3>2.1. URL base y versionado</h3>
+
+<pre>http://localhost:3001/api/v1</pre>
+
+<p>La versión viaja en la URI. Adoptar una estrategia de versionado desde el primer release,
+aunque sea la más simple, evita quedar atado a un contrato implícito de versión única cuando ya
+existen consumidores. Todas las rutas de este documento son relativas a esa base.</p>
+
+<h3>2.2. Diseño de las URIs</h3>
+
+<ul>
+    <li>Los recursos se nombran con <strong>sustantivos en plural</strong>
+        (<code>/vehiculos</code>, <code>/ordenes</code>). La acción la aporta el verbo HTTP, nunca
+        la URI: no existe <code>/crearVehiculo</code>.</li>
+    <li>Los <strong>filtros viajan por query string</strong> y no como rutas distintas:
+        <code>/vehiculos?marca=Toyota</code> es una vista de la colección, no un recurso nuevo.</li>
+    <li>El <strong>anidamiento se reserva para relaciones de pertenencia</strong>
+        (<code>/ordenes/{id}/items</code>) y no supera los dos niveles.</li>
+</ul>
+
+<h3>2.3. Content-Type</h3>
+
+<p>Todo request con cuerpo (<code>POST</code>, <code>PUT</code>, <code>PATCH</code>) debe enviar
+<code>Content-Type: application/json</code>. La API responde siempre
+<code>application/json</code>.</p>
+
+<h3>2.4. Formato de las respuestas de colección</h3>
+
+<p>Todos los listados devuelven la misma estructura, con los datos separados de la metadata de
+paginación:</p>
+
+<pre>{
+  "datos": [ ... ],
+  "meta": {
+    "total": 8, "page": 1, "limit": 20,
+    "totalPaginas": 1, "hayPaginaSiguiente": false
+  }
+}</pre>
+
+<p>Los parámetros de paginación son comunes a todas las colecciones:
+<code>page</code> (entero ≥ 1, por defecto <code>1</code>) y <code>limit</code> (entero entre 1 y
+100, por defecto <code>20</code>). El ordenamiento usa <code>sort=campo</code> para ascendente y
+<code>sort=-campo</code> para descendente.</p>
+
+<h3>2.5. Formato de los errores</h3>
+
+<p>Todos los errores, sin importar el código de estado, comparten una única forma. Esto permite
+que el cliente los maneje de manera genérica en lugar de tener un parser por endpoint:</p>
+
+<pre>{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "La solicitud contiene datos invalidos",
+    "details": [
+      { "campo": "patente", "mensaje": "'patente' no tiene un formato valido (AAA111 o AB123CD)" },
+      { "campo": "anio",    "mensaje": "'anio' debe estar entre 1950 y 2027" }
+    ]
+  }
+}</pre>
+
+<p>El campo <code>code</code> es un identificador estable, pensado para que el cliente ramifique
+sobre él sin depender del texto del mensaje. El arreglo <code>details</code> trae el detalle campo
+por campo en los errores de validación y viene vacío en el resto.</p>
+
+<table>
+    <thead>
+        <tr><th class="col-codigo">Código HTTP</th><th style="width:45mm"><code>error.code</code></th><th>Cuándo lo devuelve</th></tr>
+    </thead>
+    <tbody>
+        <tr><td class="sc sc--4xx">400</td><td class="mono">VALIDATION_ERROR</td><td>Datos del cuerpo, parámetros de consulta o campos desconocidos inválidos</td></tr>
+        <tr><td class="sc sc--4xx">400</td><td class="mono">INVALID_JSON</td><td>El cuerpo del request no es JSON parseable</td></tr>
+        <tr><td class="sc sc--4xx">404</td><td class="mono">NOT_FOUND</td><td>El recurso identificado en la URI no existe</td></tr>
+        <tr><td class="sc sc--4xx">404</td><td class="mono">ROUTE_NOT_FOUND</td><td>La ruta solicitada no corresponde a ningún endpoint de la API</td></tr>
+        <tr><td class="sc sc--4xx">405</td><td class="mono">METHOD_NOT_ALLOWED</td><td>La URI existe pero no admite ese verbo. Incluye el header <code>Allow</code></td></tr>
+        <tr><td class="sc sc--4xx">409</td><td class="mono">CONFLICT</td><td>El request es válido pero choca con el estado actual del sistema</td></tr>
+        <tr><td class="sc sc--4xx">413</td><td class="mono">PAYLOAD_TOO_LARGE</td><td>El cuerpo del request supera los 100 kB</td></tr>
+        <tr><td class="sc sc--4xx">415</td><td class="mono">UNSUPPORTED_MEDIA_TYPE</td><td>El <code>Content-Type</code> no es <code>application/json</code></td></tr>
+        <tr><td class="sc sc--5xx">500</td><td class="mono">INTERNAL_SERVER_ERROR</td><td>Error no previsto. El detalle se registra en el servidor y no se envía al cliente</td></tr>
+    </tbody>
+</table>
+
+<div class="nota">
+    <strong>Criterio 400 frente a 409.</strong> Un <code>400</code> indica que el request está mal
+    formado y el cliente puede corregirlo mirando solamente lo que envió. Un <code>409</code>
+    indica que el request es correcto pero incompatible con el estado actual del servidor: la
+    patente ya existe, la orden ya está cerrada, el vehículo tiene trabajo pendiente. El cliente no
+    podía saberlo de antemano.
+</div>
+
+<h3>2.6. Comportamientos transversales</h3>
+
+<p>Estos tres códigos son alcanzables en toda la API y por eso no se repiten en cada ficha:</p>
+
+<ul>
+    <li><strong><span class="sc sc--4xx">405 Method Not Allowed</span></strong> — cualquier URI
+        existente invocada con un verbo que no soporta. La respuesta incluye el header
+        <code>Allow</code> con los verbos admitidos, tal como exige la especificación. Cada ficha
+        de la sección 3 declara el <code>Allow</code> de su URI.</li>
+    <li><strong><span class="sc sc--4xx">413 Payload Too Large</span></strong> — todo endpoint que
+        acepta cuerpo, si este supera los 100 kB.</li>
+    <li><strong><span class="sc sc--5xx">500 Internal Server Error</span></strong> — cualquier
+        endpoint, ante un error no previsto. No es parte del comportamiento esperado.</li>
+</ul>
+
+<h3>2.7. Propiedades de los métodos</h3>
+
+<p>Cada ficha declara si el endpoint es <em>safe</em> e <em>idempotente</em>. Un método es
+<strong>safe</strong> cuando su invocación no le pide al servidor ningún cambio en los recursos que
+expone, e <strong>idempotente</strong> cuando invocarlo varias veces deja el sistema en el mismo
+estado que invocarlo una sola vez.</p>
+
+<div class="nota">
+    <strong>Sobre la idempotencia de <code>DELETE</code>.</strong> Repetir un
+    <code>DELETE</code> sobre un recurso ya eliminado devuelve <code>404</code>. Eso no contradice
+    la idempotencia: la propiedad se refiere al <em>estado del sistema</em> tras completarse el
+    request, no al código de estado devuelto. El recurso queda igualmente eliminado. El mismo
+    razonamiento aplica a <code>PUT /ordenes/{id}/estado</code>, que devuelve <code>409</code> al
+    repetirse pero deja la orden en el mismo estado.
+</div>
+
+<div class="nota">
+    <strong>Sobre <code>PATCH</code>.</strong> <code>PATCH</code> no es idempotente en general,
+    porque nada impide que una implementación aplique incrementos. En esta API sí lo es: todos los
+    campos modificables se asignan por valor absoluto, nunca por delta.
+</div>
+
+<h3>2.8. Nivel de madurez</h3>
+
+<table>
+    <thead>
+        <tr><th style="width:16mm">Nivel</th><th style="width:52mm">Requisito</th><th>Cumplimiento</th></tr>
+    </thead>
+    <tbody>
+        <tr><td><strong>0</strong></td><td>HTTP como mecanismo de transporte</td><td>Cumplido</td></tr>
+        <tr><td><strong>1</strong></td><td>Recursos identificados por URI</td><td>Cumplido — <code>/vehiculos</code>, <code>/vehiculos/{id}</code>, <code>/ordenes/{id}/items</code></td></tr>
+        <tr><td><strong>2</strong></td><td>Uso semántico de verbos HTTP y códigos de estado</td><td>Cumplido — cinco verbos según su semántica, <code>Location</code> en los <code>201</code>, <code>Allow</code> en los <code>405</code></td></tr>
+        <tr><td><strong>3</strong></td><td>Controles hipermedia (HATEOAS)</td><td>Parcial — el índice <code>GET /</code> publica las URIs de todos los recursos, pero las representaciones individuales no incluyen enlaces de navegación</td></tr>
+    </tbody>
+</table>
+
+<p>La API se sitúa por lo tanto en el <strong>Nivel 2 del Modelo de Madurez de Richardson</strong>.</p>
+
+</section>
+
+<!-- ==================== EJERCICIO 2 ==================== -->
+
+<section class="seccion">
+
+<h2 class="titulo-seccion"><span>3.</span>Documentación de los endpoints</h2>
+
+<p>Se documentan los <strong>22 endpoints</strong> que el backend expone efectivamente. Para cada
+uno se indican la ruta completa, el verbo HTTP, su propósito, sus propiedades, los parámetros que
+acepta, el cuerpo esperado cuando corresponde y todos los códigos de estado que puede devolver,
+con el caso concreto en que ocurre cada uno.</p>
+
+<h3>3.1. Recursos de servicio</h3>
+
+<!-- 1 -->
+<div class="endpoint">
+    <div class="endpoint__cabecera">
+        <span class="endpoint__numero">01</span>
+        <span class="verbo verbo--get">GET</span>
+        <span class="endpoint__ruta">/api/v1</span>
+    </div>
+    <div class="endpoint__cuerpo">
+        <p>Índice de la API. Devuelve la lista de recursos disponibles con su URI, de modo que un
+        cliente que llega a la raíz pueda descubrir la API sin leer la documentación.</p>
+        <p class="propiedades">Safe: <b>sí</b> &nbsp;·&nbsp; Idempotente: <b>sí</b> &nbsp;·&nbsp; Allow: <b>GET, OPTIONS</b> &nbsp;·&nbsp; Sin parámetros</p>
+        <table>
+            <thead><tr><th class="col-codigo">Código</th><th>Caso en que ocurre</th></tr></thead>
+            <tbody>
+                <tr><td class="sc sc--2xx">200 OK</td><td>Índice devuelto correctamente. Es el único resultado posible: el endpoint no recibe entrada</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 2 -->
+<div class="endpoint">
+    <div class="endpoint__cabecera">
+        <span class="endpoint__numero">02</span>
+        <span class="verbo verbo--get">GET</span>
+        <span class="endpoint__ruta">/api/v1/health</span>
+    </div>
+    <div class="endpoint__cuerpo">
+        <p>Chequeo de salud. Confirma que el servidor está operativo e informa cuántos vehículos y
+        órdenes cargó el set de datos por defecto, lo que permite verificar de un vistazo que la
+        inicialización funcionó.</p>
+        <p class="propiedades">Safe: <b>sí</b> &nbsp;·&nbsp; Idempotente: <b>sí</b> &nbsp;·&nbsp; Allow: <b>GET, OPTIONS</b> &nbsp;·&nbsp; Sin parámetros</p>
+        <table>
+            <thead><tr><th class="col-codigo">Código</th><th>Caso en que ocurre</th></tr></thead>
+            <tbody>
+                <tr><td class="sc sc--2xx">200 OK</td><td>El servicio responde. Un servidor caído no devuelve este endpoint en absoluto</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<h3>3.2. Vehículos</h3>
+
+<!-- 3 -->
+<div class="endpoint">
+    <div class="endpoint__cabecera">
+        <span class="endpoint__numero">03</span>
+        <span class="verbo verbo--get">GET</span>
+        <span class="endpoint__ruta">/api/v1/vehiculos</span>
+    </div>
+    <div class="endpoint__cuerpo">
+        <p>Lista la colección de vehículos del taller, con búsqueda, filtros, ordenamiento y
+        paginación.</p>
+        <p class="propiedades">Safe: <b>sí</b> &nbsp;·&nbsp; Idempotente: <b>sí</b> &nbsp;·&nbsp; Allow: <b>GET, POST, OPTIONS</b></p>
+
+        <h4>Parámetros de consulta</h4>
+        <table>
+            <thead><tr><th style="width:24mm">Parámetro</th><th style="width:22mm">Tipo</th><th>Descripción</th></tr></thead>
+            <tbody>
+                <tr><td class="mono">q</td><td>texto</td><td>Búsqueda libre sobre patente, marca, modelo y titular</td></tr>
+                <tr><td class="mono">marca</td><td>texto</td><td>Filtra por marca exacta, sin distinguir mayúsculas</td></tr>
+                <tr><td class="mono">activo</td><td>booleano</td><td>Filtra por estado de alta</td></tr>
+                <tr><td class="mono">sort</td><td>texto</td><td><code>patente</code>, <code>marca</code>, <code>modelo</code>, <code>anio</code>, <code>kilometraje</code>, <code>id</code>. Prefijo <code>-</code> para descendente. Por defecto <code>patente</code></td></tr>
+                <tr><td class="mono">page</td><td>entero</td><td>Página, desde 1. Por defecto <code>1</code></td></tr>
+                <tr><td class="mono">limit</td><td>entero</td><td>Resultados por página, entre 1 y 100. Por defecto <code>20</code></td></tr>
+            </tbody>
+        </table>
+
+        <table>
+            <thead><tr><th class="col-codigo">Código</th><th>Caso en que ocurre</th></tr></thead>
+            <tbody>
+                <tr><td class="sc sc--2xx">200 OK</td><td>Listado devuelto, con los datos y la metadata de paginación. Una búsqueda sin resultados también devuelve 200, con <code>datos</code> vacío</td></tr>
+                <tr><td class="sc sc--4xx">400 Bad Request</td><td><code>page</code> menor a 1, <code>limit</code> fuera del rango 1–100, o <code>sort</code> sobre un campo no admitido</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 4 -->
+<div class="endpoint">
+    <div class="endpoint__cabecera">
+        <span class="endpoint__numero">04</span>
+        <span class="verbo verbo--post">POST</span>
+        <span class="endpoint__ruta">/api/v1/vehiculos</span>
+    </div>
+    <div class="endpoint__cuerpo">
+        <p>Da de alta un vehículo nuevo. La patente es la clave natural del recurso y debe ser
+        única en todo el sistema. La respuesta incluye el header <code>Location</code> con la URI
+        del recurso creado.</p>
+        <p class="propiedades">Safe: <b>no</b> &nbsp;·&nbsp; Idempotente: <b>no</b> — dos invocaciones idénticas crearían dos vehículos si la patente no fuese única &nbsp;·&nbsp; Allow: <b>GET, POST, OPTIONS</b></p>
+
+        <h4>Cuerpo esperado</h4>
+<pre>{
+  "patente": "AZ999ZZ",
+  "marca": "Honda",
+  "modelo": "Civic",
+  "anio": 2020,
+  "kilometraje": 54000,
+  "titularNombre": "Carla Nunez",
+  "titularTelefono": "11-1234-5678",
+  "activo": true
+}</pre>
+        <table>
+            <thead><tr><th style="width:30mm">Campo</th><th style="width:20mm">Obligatorio</th><th>Reglas</th></tr></thead>
+            <tbody>
+                <tr><td class="mono">patente</td><td>Sí</td><td>Formato argentino: <code>AAA111</code> o <code>AB123CD</code>. Se normaliza a mayúsculas</td></tr>
+                <tr><td class="mono">marca</td><td>Sí</td><td>Texto de 2 a 40 caracteres</td></tr>
+                <tr><td class="mono">modelo</td><td>Sí</td><td>Texto de 1 a 40 caracteres</td></tr>
+                <tr><td class="mono">anio</td><td>Sí</td><td>Entero entre 1950 y el año próximo</td></tr>
+                <tr><td class="mono">kilometraje</td><td>Sí</td><td>Entero entre 0 y 2.000.000</td></tr>
+                <tr><td class="mono">titularNombre</td><td>Sí</td><td>Texto de 3 a 80 caracteres</td></tr>
+                <tr><td class="mono">titularTelefono</td><td>Sí</td><td>Texto de 6 a 30 caracteres</td></tr>
+                <tr><td class="mono">activo</td><td>No</td><td>Booleano. Por defecto <code>true</code></td></tr>
+            </tbody>
+        </table>
+
+        <table>
+            <thead><tr><th class="col-codigo">Código</th><th>Caso en que ocurre</th></tr></thead>
+            <tbody>
+                <tr><td class="sc sc--2xx">201 Created</td><td>Vehículo creado. Devuelve la representación completa y el header <code>Location</code></td></tr>
+                <tr><td class="sc sc--4xx">400 Bad Request</td><td>Falta un campo obligatorio, un valor no cumple sus reglas, se envió un campo que el recurso no acepta, o el cuerpo no es JSON parseable</td></tr>
+                <tr><td class="sc sc--4xx">409 Conflict</td><td>Ya existe otro vehículo con esa patente</td></tr>
+                <tr><td class="sc sc--4xx">413 Payload Too Large</td><td>El cuerpo supera los 100 kB</td></tr>
+                <tr><td class="sc sc--4xx">415 Unsupported Media Type</td><td>El <code>Content-Type</code> no es <code>application/json</code></td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 5 -->
+<div class="endpoint">
+    <div class="endpoint__cabecera">
+        <span class="endpoint__numero">05</span>
+        <span class="verbo verbo--get">GET</span>
+        <span class="endpoint__ruta">/api/v1/vehiculos/<em>{id}</em></span>
+    </div>
+    <div class="endpoint__cuerpo">
+        <p>Devuelve la representación completa de un vehículo identificado por su id.</p>
+        <p class="propiedades">Safe: <b>sí</b> &nbsp;·&nbsp; Idempotente: <b>sí</b> &nbsp;·&nbsp; Allow: <b>GET, PUT, PATCH, DELETE, OPTIONS</b></p>
+        <h4>Parámetro de ruta</h4>
+        <p><code>id</code> — identificador numérico del vehículo.</p>
+        <table>
+            <thead><tr><th class="col-codigo">Código</th><th>Caso en que ocurre</th></tr></thead>
+            <tbody>
+                <tr><td class="sc sc--2xx">200 OK</td><td>Vehículo encontrado</td></tr>
+                <tr><td class="sc sc--4xx">404 Not Found</td><td>No existe un vehículo con ese id. También se devuelve cuando el id no es numérico, porque en ese caso tampoco identifica ningún recurso</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 6 -->
+<div class="endpoint">
+    <div class="endpoint__cabecera">
+        <span class="endpoint__numero">06</span>
+        <span class="verbo verbo--put">PUT</span>
+        <span class="endpoint__ruta">/api/v1/vehiculos/<em>{id}</em></span>
+    </div>
+    <div class="endpoint__cuerpo">
+        <p>Reemplaza por completo la representación del vehículo. El cliente debe enviar
+        <strong>todos</strong> los campos obligatorios: se validan con las mismas reglas que el
+        alta. Es la diferencia esencial con <code>PATCH</code>.</p>
+        <p class="propiedades">Safe: <b>no</b> &nbsp;·&nbsp; Idempotente: <b>sí</b> — repetir el mismo request deja el vehículo en idéntico estado &nbsp;·&nbsp; Allow: <b>GET, PUT, PATCH, DELETE, OPTIONS</b></p>
+
+        <h4>Cuerpo esperado</h4>
+<pre>{
+  "patente": "AB123CD",
+  "marca": "Toyota",
+  "modelo": "Corolla XEI",
+  "anio": 2019,
+  "kilometraje": 90000,
+  "titularNombre": "Laura Gimenez",
+  "titularTelefono": "11-4455-8890",
+  "activo": true
+}</pre>
+        <table>
+            <thead><tr><th class="col-codigo">Código</th><th>Caso en que ocurre</th></tr></thead>
+            <tbody>
+                <tr><td class="sc sc--2xx">200 OK</td><td>Vehículo reemplazado. Devuelve la representación resultante</td></tr>
+                <tr><td class="sc sc--4xx">400 Bad Request</td><td>Falta algún campo obligatorio, un valor es inválido, o se envió un campo desconocido</td></tr>
+                <tr><td class="sc sc--4xx">404 Not Found</td><td>No existe un vehículo con ese id</td></tr>
+                <tr><td class="sc sc--4xx">409 Conflict</td><td>La patente enviada ya pertenece a otro vehículo, o el kilometraje es menor al registrado (un vehículo no desanda kilómetros)</td></tr>
+                <tr><td class="sc sc--4xx">413 Payload Too Large</td><td>El cuerpo supera los 100 kB</td></tr>
+                <tr><td class="sc sc--4xx">415 Unsupported Media Type</td><td>El <code>Content-Type</code> no es <code>application/json</code></td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 7 -->
+<div class="endpoint">
+    <div class="endpoint__cabecera">
+        <span class="endpoint__numero">07</span>
+        <span class="verbo verbo--patch">PATCH</span>
+        <span class="endpoint__ruta">/api/v1/vehiculos/<em>{id}</em></span>
+    </div>
+    <div class="endpoint__cuerpo">
+        <p>Modifica parcialmente un vehículo: aplica únicamente los campos enviados y conserva el
+        resto. Es la vía recomendada para actualizar un solo dato, como el kilometraje tras un
+        service, o para dar de baja lógicamente una unidad.</p>
+        <p class="propiedades">Safe: <b>no</b> &nbsp;·&nbsp; Idempotente: <b>sí</b> en esta API — los campos se asignan por valor absoluto &nbsp;·&nbsp; Allow: <b>GET, PUT, PATCH, DELETE, OPTIONS</b></p>
+
+        <h4>Cuerpo esperado</h4>
+        <p>Cualquier subconjunto no vacío de los campos del alta:</p>
+<pre>{ "kilometraje": 92000 }
+
+{ "activo": false }
+
+{ "titularNombre": "Laura Gimenez", "titularTelefono": "11-5555-0000" }</pre>
+        <table>
+            <thead><tr><th class="col-codigo">Código</th><th>Caso en que ocurre</th></tr></thead>
+            <tbody>
+                <tr><td class="sc sc--2xx">200 OK</td><td>Vehículo modificado. Devuelve la representación completa resultante</td></tr>
+                <tr><td class="sc sc--4xx">400 Bad Request</td><td>El cuerpo viene vacío (un <code>PATCH</code> sin cambios no tiene sentido), algún valor enviado es inválido, o se envió un campo desconocido</td></tr>
+                <tr><td class="sc sc--4xx">404 Not Found</td><td>No existe un vehículo con ese id</td></tr>
+                <tr><td class="sc sc--4xx">409 Conflict</td><td>La patente enviada ya pertenece a otro vehículo, o el kilometraje es menor al registrado</td></tr>
+                <tr><td class="sc sc--4xx">413 Payload Too Large</td><td>El cuerpo supera los 100 kB</td></tr>
+                <tr><td class="sc sc--4xx">415 Unsupported Media Type</td><td>El <code>Content-Type</code> no es <code>application/json</code></td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 8 -->
+<div class="endpoint">
+    <div class="endpoint__cabecera">
+        <span class="endpoint__numero">08</span>
+        <span class="verbo verbo--delete">DELETE</span>
+        <span class="endpoint__ruta">/api/v1/vehiculos/<em>{id}</em></span>
+    </div>
+    <div class="endpoint__cuerpo">
+        <p>Elimina un vehículo junto con sus órdenes históricas. La baja se bloquea si la unidad
+        tiene órdenes abiertas, porque eliminarla dejaría órdenes apuntando a un vehículo
+        inexistente. En ese caso el mensaje de error sugiere la baja lógica como alternativa.</p>
+        <p class="propiedades">Safe: <b>no</b> &nbsp;·&nbsp; Idempotente: <b>sí</b> — repetir el request deja el vehículo igualmente eliminado, aunque la segunda invocación devuelva 404 &nbsp;·&nbsp; Allow: <b>GET, PUT, PATCH, DELETE, OPTIONS</b> &nbsp;·&nbsp; Sin cuerpo</p>
+        <table>
+            <thead><tr><th class="col-codigo">Código</th><th>Caso en que ocurre</th></tr></thead>
+            <tbody>
+                <tr><td class="sc sc--2xx">204 No Content</td><td>Vehículo eliminado. No se devuelve cuerpo: la baja no tiene nada útil que informar</td></tr>
+                <tr><td class="sc sc--4xx">404 Not Found</td><td>No existe un vehículo con ese id</td></tr>
+                <tr><td class="sc sc--4xx">409 Conflict</td><td>El vehículo tiene al menos una orden en estado <code>PENDIENTE</code> o <code>EN_PROCESO</code></td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 9 -->
+<div class="endpoint">
+    <div class="endpoint__cabecera">
+        <span class="endpoint__numero">09</span>
+        <span class="verbo verbo--get">GET</span>
+        <span class="endpoint__ruta">/api/v1/vehiculos/<em>{id}</em>/ordenes</span>
+    </div>
+    <div class="endpoint__cuerpo">
+        <p>Devuelve el historial completo de órdenes de trabajo de un vehículo, ordenado de la más
+        reciente a la más antigua. Es un sub-recurso: las órdenes pertenecen al vehículo y la URI lo
+        expresa por anidamiento.</p>
+        <p class="propiedades">Safe: <b>sí</b> &nbsp;·&nbsp; Idempotente: <b>sí</b> &nbsp;·&nbsp; Allow: <b>GET, OPTIONS</b> &nbsp;·&nbsp; Sin parámetros de consulta</p>
+        <table>
+            <thead><tr><th class="col-codigo">Código</th><th>Caso en que ocurre</th></tr></thead>
+            <tbody>
+                <tr><td class="sc sc--2xx">200 OK</td><td>Historial devuelto. Un vehículo sin órdenes devuelve 200 con la lista vacía</td></tr>
+                <tr><td class="sc sc--4xx">404 Not Found</td><td>El vehículo indicado en la URI no existe</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<h3>3.3. Órdenes de trabajo</h3>
+
+<!-- 10 -->
+<div class="endpoint">
+    <div class="endpoint__cabecera">
+        <span class="endpoint__numero">10</span>
+        <span class="verbo verbo--get">GET</span>
+        <span class="endpoint__ruta">/api/v1/ordenes</span>
+    </div>
+    <div class="endpoint__cuerpo">
+        <p>Lista la colección de órdenes de trabajo con filtros, ordenamiento y paginación. Cada
+        orden se devuelve enriquecida con los datos básicos de su vehículo, para que una grilla no
+        necesite hacer un request adicional por cada fila.</p>
+        <p class="propiedades">Safe: <b>sí</b> &nbsp;·&nbsp; Idempotente: <b>sí</b> &nbsp;·&nbsp; Allow: <b>GET, POST, OPTIONS</b></p>
+
+        <h4>Parámetros de consulta</h4>
+        <table>
+            <thead><tr><th style="width:24mm">Parámetro</th><th style="width:22mm">Tipo</th><th>Descripción</th></tr></thead>
+            <tbody>
+                <tr><td class="mono">estado</td><td>texto</td><td>Uno o varios estados separados por coma, ej. <code>PENDIENTE,EN_PROCESO</code></td></tr>
+                <tr><td class="mono">vehiculoId</td><td>entero</td><td>Filtra por vehículo</td></tr>
+                <tr><td class="mono">mecanico</td><td>texto</td><td>Coincidencia parcial sobre el nombre del mecánico</td></tr>
+                <tr><td class="mono">desde</td><td>fecha</td><td>Límite inferior del rango sobre la fecha de ingreso, en formato ISO 8601</td></tr>
+                <tr><td class="mono">hasta</td><td>fecha</td><td>Límite superior del rango sobre la fecha de ingreso, en formato ISO 8601</td></tr>
+                <tr><td class="mono">sort</td><td>texto</td><td><code>id</code>, <code>numero</code>, <code>fechaIngreso</code>, <code>estado</code>, <code>total</code>, <code>mecanico</code>. Por defecto <code>-fechaIngreso</code></td></tr>
+                <tr><td class="mono">page</td><td>entero</td><td>Página, desde 1. Por defecto <code>1</code></td></tr>
+                <tr><td class="mono">limit</td><td>entero</td><td>Resultados por página, entre 1 y 100. Por defecto <code>20</code></td></tr>
+            </tbody>
+        </table>
+
+        <table>
+            <thead><tr><th class="col-codigo">Código</th><th>Caso en que ocurre</th></tr></thead>
+            <tbody>
+                <tr><td class="sc sc--2xx">200 OK</td><td>Listado devuelto con los datos y la metadata de paginación</td></tr>
+                <tr><td class="sc sc--4xx">400 Bad Request</td><td><code>page</code> o <code>limit</code> fuera de rango, <code>sort</code> sobre un campo no admitido, o <code>desde</code> / <code>hasta</code> con una fecha no interpretable</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 11 -->
+<div class="endpoint">
+    <div class="endpoint__cabecera">
+        <span class="endpoint__numero">11</span>
+        <span class="verbo verbo--post">POST</span>
+        <span class="endpoint__ruta">/api/v1/ordenes</span>
+    </div>
+    <div class="endpoint__cuerpo">
+        <p>Abre una orden de trabajo sobre un vehículo activo. Toda orden nace en estado
+        <code>PENDIENTE</code> y sin ítems: el estado no se acepta desde el cliente, solo puede
+        avanzar por el endpoint de transición. Permitir fijarlo en el alta habilitaría crear
+        órdenes ya cerradas, salteando la validación de que una orden cerrada necesita ítems.</p>
+        <p class="propiedades">Safe: <b>no</b> &nbsp;·&nbsp; Idempotente: <b>no</b> — repetir el request abre una segunda orden &nbsp;·&nbsp; Allow: <b>GET, POST, OPTIONS</b></p>
+
+        <h4>Cuerpo esperado</h4>
+<pre>{
+  "vehiculoId": 1,
+  "descripcion": "Cambio de correa de distribucion y tensor",
+  "mecanico": "Ruben Paz",
+  "kilometrajeIngreso": 95000
+}</pre>
+        <table>
+            <thead><tr><th style="width:36mm">Campo</th><th style="width:20mm">Obligatorio</th><th>Reglas</th></tr></thead>
+            <tbody>
+                <tr><td class="mono">vehiculoId</td><td>Sí</td><td>Entero. El vehículo debe existir y estar activo</td></tr>
+                <tr><td class="mono">descripcion</td><td>Sí</td><td>Texto de 5 a 300 caracteres</td></tr>
+                <tr><td class="mono">mecanico</td><td>Sí</td><td>Texto de 3 a 80 caracteres</td></tr>
+                <tr><td class="mono">kilometrajeIngreso</td><td>Sí</td><td>Entero. No puede ser menor al kilometraje actual del vehículo</td></tr>
+            </tbody>
+        </table>
+
+        <table>
+            <thead><tr><th class="col-codigo">Código</th><th>Caso en que ocurre</th></tr></thead>
+            <tbody>
+                <tr><td class="sc sc--2xx">201 Created</td><td>Orden creada en estado <code>PENDIENTE</code>, con su número de negocio asignado y el header <code>Location</code></td></tr>
+                <tr><td class="sc sc--4xx">400 Bad Request</td><td>Falta un campo obligatorio, un valor es inválido, se envió un campo desconocido, o <strong>el vehículo referenciado no existe</strong>. Este último caso es 400 y no 404 porque el recurso pedido (<code>/ordenes</code>) sí existe: lo que está mal es un dato del cuerpo</td></tr>
+                <tr><td class="sc sc--4xx">409 Conflict</td><td>El vehículo está dado de baja y no admite nuevas órdenes, o el kilometraje de ingreso es menor al último registrado</td></tr>
+                <tr><td class="sc sc--4xx">413 Payload Too Large</td><td>El cuerpo supera los 100 kB</td></tr>
+                <tr><td class="sc sc--4xx">415 Unsupported Media Type</td><td>El <code>Content-Type</code> no es <code>application/json</code></td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 12 -->
+<div class="endpoint">
+    <div class="endpoint__cabecera">
+        <span class="endpoint__numero">12</span>
+        <span class="verbo verbo--get">GET</span>
+        <span class="endpoint__ruta">/api/v1/ordenes/<em>{id}</em></span>
+    </div>
+    <div class="endpoint__cuerpo">
+        <p>Devuelve una orden de trabajo con todos sus ítems y el total calculado a partir de
+        ellos. El total nunca se almacena: se deriva de los ítems en cada lectura, de modo que no
+        pueda quedar desincronizado.</p>
+        <p class="propiedades">Safe: <b>sí</b> &nbsp;·&nbsp; Idempotente: <b>sí</b> &nbsp;·&nbsp; Allow: <b>GET, PATCH, DELETE, OPTIONS</b></p>
+        <table>
+            <thead><tr><th class="col-codigo">Código</th><th>Caso en que ocurre</th></tr></thead>
+            <tbody>
+                <tr><td class="sc sc--2xx">200 OK</td><td>Orden encontrada</td></tr>
+                <tr><td class="sc sc--4xx">404 Not Found</td><td>No existe una orden con ese id</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 13 -->
+<div class="endpoint">
+    <div class="endpoint__cabecera">
+        <span class="endpoint__numero">13</span>
+        <span class="verbo verbo--patch">PATCH</span>
+        <span class="endpoint__ruta">/api/v1/ordenes/<em>{id}</em></span>
+    </div>
+    <div class="endpoint__cuerpo">
+        <p>Modifica la descripción del trabajo y/o el mecánico asignado. Solo se admite mientras la
+        orden esté abierta.</p>
+        <div class="nota">
+            Este recurso <strong>no expone <code>PUT</code></strong> deliberadamente. Una orden
+            tiene campos que el cliente no puede fijar (<code>numero</code>, <code>estado</code>,
+            fechas, <code>total</code>), y ofrecer un reemplazo completo daría a entender que se
+            pueden enviar todos.
+        </div>
+        <p class="propiedades">Safe: <b>no</b> &nbsp;·&nbsp; Idempotente: <b>sí</b> en esta API &nbsp;·&nbsp; Allow: <b>GET, PATCH, DELETE, OPTIONS</b></p>
+
+        <h4>Cuerpo esperado</h4>
+<pre>{ "descripcion": "Revision general del motor", "mecanico": "Nadia Ocampo" }</pre>
+        <p>Ambos campos son opcionales, pero debe enviarse al menos uno. <code>descripcion</code>
+        admite de 5 a 300 caracteres y <code>mecanico</code> de 3 a 80.</p>
+
+        <table>
+            <thead><tr><th class="col-codigo">Código</th><th>Caso en que ocurre</th></tr></thead>
+            <tbody>
+                <tr><td class="sc sc--2xx">200 OK</td><td>Orden modificada</td></tr>
+                <tr><td class="sc sc--4xx">400 Bad Request</td><td>El cuerpo viene vacío, un valor es inválido, o se envió un campo que este endpoint no acepta (por ejemplo <code>estado</code>)</td></tr>
+                <tr><td class="sc sc--4xx">404 Not Found</td><td>No existe una orden con ese id</td></tr>
+                <tr><td class="sc sc--4xx">409 Conflict</td><td>La orden está <code>CERRADA</code> o <code>CANCELADA</code>: es un documento cerrado y no se reescribe</td></tr>
+                <tr><td class="sc sc--4xx">413 Payload Too Large</td><td>El cuerpo supera los 100 kB</td></tr>
+                <tr><td class="sc sc--4xx">415 Unsupported Media Type</td><td>El <code>Content-Type</code> no es <code>application/json</code></td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 14 -->
+<div class="endpoint">
+    <div class="endpoint__cabecera">
+        <span class="endpoint__numero">14</span>
+        <span class="verbo verbo--delete">DELETE</span>
+        <span class="endpoint__ruta">/api/v1/ordenes/<em>{id}</em></span>
+    </div>
+    <div class="endpoint__cuerpo">
+        <p>Elimina una orden abierta o cancelada. Las órdenes cerradas no se eliminan: forman el
+        historial facturado que alimenta los reportes. Para descartar una orden sin borrarla existe
+        el estado <code>CANCELADA</code>.</p>
+        <p class="propiedades">Safe: <b>no</b> &nbsp;·&nbsp; Idempotente: <b>sí</b> &nbsp;·&nbsp; Allow: <b>GET, PATCH, DELETE, OPTIONS</b> &nbsp;·&nbsp; Sin cuerpo</p>
+        <table>
+            <thead><tr><th class="col-codigo">Código</th><th>Caso en que ocurre</th></tr></thead>
+            <tbody>
+                <tr><td class="sc sc--2xx">204 No Content</td><td>Orden eliminada. Sin cuerpo de respuesta</td></tr>
+                <tr><td class="sc sc--4xx">404 Not Found</td><td>No existe una orden con ese id</td></tr>
+                <tr><td class="sc sc--4xx">409 Conflict</td><td>La orden está <code>CERRADA</code> y forma parte del historial facturado</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 15 -->
+<div class="endpoint">
+    <div class="endpoint__cabecera">
+        <span class="endpoint__numero">15</span>
+        <span class="verbo verbo--put">PUT</span>
+        <span class="endpoint__ruta">/api/v1/ordenes/<em>{id}</em>/estado</span>
+    </div>
+    <div class="endpoint__cuerpo">
+        <p>Aplica una transición de estado respetando la máquina de estados de la sección 1.3. Al
+        pasar a <code>CERRADA</code>, además, actualiza el kilometraje del vehículo si el de
+        ingreso es mayor.</p>
+        <div class="nota">
+            El estado se modela como <strong>sub-recurso propio</strong> y no como un campo más del
+            <code>PATCH</code> porque cambiarlo dispara efectos de negocio —validar la transición,
+            exigir ítems para cerrar, actualizar el vehículo— que no son una simple edición de un
+            atributo. Se usa <code>PUT</code> y no <code>POST</code> porque la operación fija el
+            estado a un valor determinado, lo que la hace idempotente en su intención.
+        </div>
+        <p class="propiedades">Safe: <b>no</b> &nbsp;·&nbsp; Idempotente: <b>sí</b> — repetir el request deja la orden en el mismo estado, aunque la segunda invocación devuelva 409 &nbsp;·&nbsp; Allow: <b>PUT, OPTIONS</b></p>
+
+        <h4>Cuerpo esperado</h4>
+<pre>{ "estado": "EN_PROCESO" }</pre>
+        <p>Valores admitidos: <code>PENDIENTE</code>, <code>EN_PROCESO</code>,
+        <code>CERRADA</code>, <code>CANCELADA</code>. Es el único campo aceptado.</p>
+
+        <table>
+            <thead><tr><th class="col-codigo">Código</th><th>Caso en que ocurre</th></tr></thead>
+            <tbody>
+                <tr><td class="sc sc--2xx">200 OK</td><td>Transición aplicada. Devuelve la orden con su nuevo estado y, si corresponde, la fecha de cierre</td></tr>
+                <tr><td class="sc sc--4xx">400 Bad Request</td><td>El valor de <code>estado</code> no pertenece al conjunto admitido, o se envió otro campo</td></tr>
+                <tr><td class="sc sc--4xx">404 Not Found</td><td>No existe una orden con ese id</td></tr>
+                <tr><td class="sc sc--4xx">409 Conflict</td><td>Tres casos: la transición no está permitida por la máquina de estados; la orden ya se encuentra en el estado solicitado; o se intenta cerrar una orden sin ítems cargados</td></tr>
+                <tr><td class="sc sc--4xx">413 Payload Too Large</td><td>El cuerpo supera los 100 kB</td></tr>
+                <tr><td class="sc sc--4xx">415 Unsupported Media Type</td><td>El <code>Content-Type</code> no es <code>application/json</code></td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<h3>3.4. Ítems de una orden</h3>
+
+<!-- 16 -->
+<div class="endpoint">
+    <div class="endpoint__cabecera">
+        <span class="endpoint__numero">16</span>
+        <span class="verbo verbo--get">GET</span>
+        <span class="endpoint__ruta">/api/v1/ordenes/<em>{id}</em>/items</span>
+    </div>
+    <div class="endpoint__cuerpo">
+        <p>Lista los repuestos y las tareas de mano de obra cargados en una orden, con el subtotal
+        de cada uno.</p>
+        <p class="propiedades">Safe: <b>sí</b> &nbsp;·&nbsp; Idempotente: <b>sí</b> &nbsp;·&nbsp; Allow: <b>GET, POST, OPTIONS</b></p>
+        <table>
+            <thead><tr><th class="col-codigo">Código</th><th>Caso en que ocurre</th></tr></thead>
+            <tbody>
+                <tr><td class="sc sc--2xx">200 OK</td><td>Ítems devueltos. Una orden sin ítems devuelve 200 con la lista vacía</td></tr>
+                <tr><td class="sc sc--4xx">404 Not Found</td><td>La orden indicada en la URI no existe</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 17 -->
+<div class="endpoint">
+    <div class="endpoint__cabecera">
+        <span class="endpoint__numero">17</span>
+        <span class="verbo verbo--post">POST</span>
+        <span class="endpoint__ruta">/api/v1/ordenes/<em>{id}</em>/items</span>
+    </div>
+    <div class="endpoint__cuerpo">
+        <p>Agrega un repuesto o una tarea de mano de obra a una orden abierta. El subtotal del ítem
+        y el total de la orden se recalculan automáticamente.</p>
+        <p class="propiedades">Safe: <b>no</b> &nbsp;·&nbsp; Idempotente: <b>no</b> — repetir el request agrega un segundo ítem &nbsp;·&nbsp; Allow: <b>GET, POST, OPTIONS</b></p>
+
+        <h4>Cuerpo esperado</h4>
+<pre>{
+  "tipo": "REPUESTO",
+  "descripcion": "Kit de distribucion",
+  "cantidad": 1,
+  "precioUnitario": 195000
+}</pre>
+        <table>
+            <thead><tr><th style="width:32mm">Campo</th><th style="width:20mm">Obligatorio</th><th>Reglas</th></tr></thead>
+            <tbody>
+                <tr><td class="mono">tipo</td><td>Sí</td><td><code>REPUESTO</code> o <code>MANO_DE_OBRA</code></td></tr>
+                <tr><td class="mono">descripcion</td><td>Sí</td><td>Texto de 3 a 150 caracteres</td></tr>
+                <tr><td class="mono">cantidad</td><td>Sí</td><td>Entero entre 1 y 999</td></tr>
+                <tr><td class="mono">precioUnitario</td><td>Sí</td><td>Número mayor o igual a 0</td></tr>
+            </tbody>
+        </table>
+
+        <table>
+            <thead><tr><th class="col-codigo">Código</th><th>Caso en que ocurre</th></tr></thead>
+            <tbody>
+                <tr><td class="sc sc--2xx">201 Created</td><td>Ítem agregado. Devuelve el ítem con su subtotal calculado y el header <code>Location</code>. El id del ítem es único dentro de su orden, no globalmente</td></tr>
+                <tr><td class="sc sc--4xx">400 Bad Request</td><td>Falta un campo, el tipo no pertenece al conjunto admitido, la cantidad no es un entero positivo, o se envió un campo desconocido</td></tr>
+                <tr><td class="sc sc--4xx">404 Not Found</td><td>La orden indicada en la URI no existe</td></tr>
+                <tr><td class="sc sc--4xx">409 Conflict</td><td>La orden está <code>CERRADA</code> o <code>CANCELADA</code> y ya no admite carga de ítems</td></tr>
+                <tr><td class="sc sc--4xx">413 Payload Too Large</td><td>El cuerpo supera los 100 kB</td></tr>
+                <tr><td class="sc sc--4xx">415 Unsupported Media Type</td><td>El <code>Content-Type</code> no es <code>application/json</code></td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 18 -->
+<div class="endpoint">
+    <div class="endpoint__cabecera">
+        <span class="endpoint__numero">18</span>
+        <span class="verbo verbo--delete">DELETE</span>
+        <span class="endpoint__ruta">/api/v1/ordenes/<em>{id}</em>/items/<em>{itemId}</em></span>
+    </div>
+    <div class="endpoint__cuerpo">
+        <p>Quita un ítem de una orden abierta y recalcula el total.</p>
+        <p class="propiedades">Safe: <b>no</b> &nbsp;·&nbsp; Idempotente: <b>sí</b> &nbsp;·&nbsp; Allow: <b>DELETE, OPTIONS</b> &nbsp;·&nbsp; Sin cuerpo</p>
+        <h4>Parámetros de ruta</h4>
+        <p><code>id</code> — identificador de la orden. &nbsp; <code>itemId</code> — identificador
+        del ítem dentro de esa orden.</p>
+        <table>
+            <thead><tr><th class="col-codigo">Código</th><th>Caso en que ocurre</th></tr></thead>
+            <tbody>
+                <tr><td class="sc sc--2xx">204 No Content</td><td>Ítem quitado. Sin cuerpo de respuesta</td></tr>
+                <tr><td class="sc sc--4xx">404 Not Found</td><td>La orden no existe, o el ítem no existe dentro de esa orden</td></tr>
+                <tr><td class="sc sc--4xx">409 Conflict</td><td>La orden está <code>CERRADA</code> o <code>CANCELADA</code></td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<h3>3.5. Reportes</h3>
+
+<p>Los cuatro reportes son recursos derivados y de solo lectura: se calculan a demanda a partir de
+vehículos y órdenes, y no se almacenan. Por eso responden siempre con
+<code>Cache-Control: no-store</code> y solo admiten <code>GET</code>. Criterio común: únicamente
+las órdenes <code>CERRADA</code> cuentan como facturación, porque una orden abierta todavía puede
+cambiar de monto y una cancelada nunca se cobró.</p>
+
+<!-- 19 -->
+<div class="endpoint">
+    <div class="endpoint__cabecera">
+        <span class="endpoint__numero">19</span>
+        <span class="verbo verbo--get">GET</span>
+        <span class="endpoint__ruta">/api/v1/reportes/resumen</span>
+    </div>
+    <div class="endpoint__cuerpo">
+        <p>Indicadores generales del taller: facturación total, ticket promedio por orden, cantidad
+        de órdenes discriminadas por estado y conteo de vehículos activos e inactivos.</p>
+        <p class="propiedades">Safe: <b>sí</b> &nbsp;·&nbsp; Idempotente: <b>sí</b> &nbsp;·&nbsp; Allow: <b>GET, OPTIONS</b> &nbsp;·&nbsp; Sin parámetros</p>
+        <table>
+            <thead><tr><th class="col-codigo">Código</th><th>Caso en que ocurre</th></tr></thead>
+            <tbody>
+                <tr><td class="sc sc--2xx">200 OK</td><td>Reporte calculado. Es el único resultado posible: el endpoint no recibe entrada</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 20 -->
+<div class="endpoint">
+    <div class="endpoint__cabecera">
+        <span class="endpoint__numero">20</span>
+        <span class="verbo verbo--get">GET</span>
+        <span class="endpoint__ruta">/api/v1/reportes/facturacion-mensual</span>
+    </div>
+    <div class="endpoint__cuerpo">
+        <p>Facturación agrupada por mes. Devuelve siempre los doce meses, incluidos los que no
+        tuvieron movimiento: un gráfico con meses faltantes distorsiona la lectura de la
+        tendencia.</p>
+        <p class="propiedades">Safe: <b>sí</b> &nbsp;·&nbsp; Idempotente: <b>sí</b> &nbsp;·&nbsp; Allow: <b>GET, OPTIONS</b></p>
+        <h4>Parámetro de consulta</h4>
+        <p><code>anio</code> — entero entre 2000 y el año próximo. Por defecto, el año en curso.</p>
+        <table>
+            <thead><tr><th class="col-codigo">Código</th><th>Caso en que ocurre</th></tr></thead>
+            <tbody>
+                <tr><td class="sc sc--2xx">200 OK</td><td>Reporte calculado. Un año sin actividad devuelve la grilla completa en cero</td></tr>
+                <tr><td class="sc sc--4xx">400 Bad Request</td><td><code>anio</code> no es un entero, o está fuera del rango admitido</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 21 -->
+<div class="endpoint">
+    <div class="endpoint__cabecera">
+        <span class="endpoint__numero">21</span>
+        <span class="verbo verbo--get">GET</span>
+        <span class="endpoint__ruta">/api/v1/reportes/costos-por-vehiculo</span>
+    </div>
+    <div class="endpoint__cuerpo">
+        <p>Costo histórico de mantenimiento de cada unidad, discriminado entre repuestos y mano de
+        obra, ordenado de mayor a menor facturación.</p>
+        <p class="propiedades">Safe: <b>sí</b> &nbsp;·&nbsp; Idempotente: <b>sí</b> &nbsp;·&nbsp; Allow: <b>GET, OPTIONS</b></p>
+        <h4>Parámetro de consulta</h4>
+        <p><code>limit</code> — entero entre 1 y 100, para pedir el top N. Por defecto se devuelven
+        todos los vehículos.</p>
+        <table>
+            <thead><tr><th class="col-codigo">Código</th><th>Caso en que ocurre</th></tr></thead>
+            <tbody>
+                <tr><td class="sc sc--2xx">200 OK</td><td>Reporte calculado</td></tr>
+                <tr><td class="sc sc--4xx">400 Bad Request</td><td><code>limit</code> no es un entero, o está fuera del rango admitido</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 22 -->
+<div class="endpoint">
+    <div class="endpoint__cabecera">
+        <span class="endpoint__numero">22</span>
+        <span class="verbo verbo--get">GET</span>
+        <span class="endpoint__ruta">/api/v1/reportes/service-vencido</span>
+    </div>
+    <div class="endpoint__cuerpo">
+        <p>Vehículos activos que recorrieron más kilómetros que el umbral desde su última orden
+        cerrada. Una unidad que nunca ingresó al taller se mide contra su kilometraje total y se
+        marca con <code>nuncaIngreso</code>. El reporte incluye el teléfono del titular, porque su
+        caso de uso es llamarlo para ofrecerle el turno.</p>
+        <p class="propiedades">Safe: <b>sí</b> &nbsp;·&nbsp; Idempotente: <b>sí</b> &nbsp;·&nbsp; Allow: <b>GET, OPTIONS</b></p>
+        <h4>Parámetro de consulta</h4>
+        <p><code>umbralKm</code> — entero entre 1.000 y 100.000. Por defecto <code>10000</code>.</p>
+        <table>
+            <thead><tr><th class="col-codigo">Código</th><th>Caso en que ocurre</th></tr></thead>
+            <tbody>
+                <tr><td class="sc sc--2xx">200 OK</td><td>Reporte calculado. Si ninguna unidad supera el umbral, devuelve la lista vacía</td></tr>
+                <tr><td class="sc sc--4xx">400 Bad Request</td><td><code>umbralKm</code> no es un entero, o está fuera del rango admitido</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</section>
+
+<!-- ==================== RESUMEN ==================== -->
+
+<section class="seccion">
+
+<h2 class="titulo-seccion"><span>4.</span>Tabla resumen</h2>
+
+<p>Vista consolidada de los 22 endpoints. Los códigos <code>405</code> y <code>500</code>, por ser
+transversales a toda la API, no se repiten en cada fila (ver sección 2.6).</p>
+
+<table>
+    <thead>
+        <tr>
+            <th style="width:8mm">#</th>
+            <th class="col-verbo">Verbo</th>
+            <th class="col-ruta">Ruta</th>
+            <th>Propósito</th>
+            <th style="width:38mm">Códigos de estado</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr><td>01</td><td class="mono">GET</td><td class="mono">/api/v1</td><td>Índice de recursos</td><td class="mono">200</td></tr>
+        <tr><td>02</td><td class="mono">GET</td><td class="mono">/api/v1/health</td><td>Chequeo de salud</td><td class="mono">200</td></tr>
+        <tr><td>03</td><td class="mono">GET</td><td class="mono">/api/v1/vehiculos</td><td>Listar vehículos</td><td class="mono">200, 400</td></tr>
+        <tr><td>04</td><td class="mono">POST</td><td class="mono">/api/v1/vehiculos</td><td>Dar de alta un vehículo</td><td class="mono">201, 400, 409, 413, 415</td></tr>
+        <tr><td>05</td><td class="mono">GET</td><td class="mono">/api/v1/vehiculos/{id}</td><td>Obtener un vehículo</td><td class="mono">200, 404</td></tr>
+        <tr><td>06</td><td class="mono">PUT</td><td class="mono">/api/v1/vehiculos/{id}</td><td>Reemplazar un vehículo</td><td class="mono">200, 400, 404, 409, 413, 415</td></tr>
+        <tr><td>07</td><td class="mono">PATCH</td><td class="mono">/api/v1/vehiculos/{id}</td><td>Modificar parcialmente un vehículo</td><td class="mono">200, 400, 404, 409, 413, 415</td></tr>
+        <tr><td>08</td><td class="mono">DELETE</td><td class="mono">/api/v1/vehiculos/{id}</td><td>Eliminar un vehículo</td><td class="mono">204, 404, 409</td></tr>
+        <tr><td>09</td><td class="mono">GET</td><td class="mono">/api/v1/vehiculos/{id}/ordenes</td><td>Historial de órdenes del vehículo</td><td class="mono">200, 404</td></tr>
+        <tr><td>10</td><td class="mono">GET</td><td class="mono">/api/v1/ordenes</td><td>Listar órdenes de trabajo</td><td class="mono">200, 400</td></tr>
+        <tr><td>11</td><td class="mono">POST</td><td class="mono">/api/v1/ordenes</td><td>Abrir una orden de trabajo</td><td class="mono">201, 400, 409, 413, 415</td></tr>
+        <tr><td>12</td><td class="mono">GET</td><td class="mono">/api/v1/ordenes/{id}</td><td>Obtener una orden con sus ítems</td><td class="mono">200, 404</td></tr>
+        <tr><td>13</td><td class="mono">PATCH</td><td class="mono">/api/v1/ordenes/{id}</td><td>Modificar una orden abierta</td><td class="mono">200, 400, 404, 409, 413, 415</td></tr>
+        <tr><td>14</td><td class="mono">DELETE</td><td class="mono">/api/v1/ordenes/{id}</td><td>Eliminar una orden</td><td class="mono">204, 404, 409</td></tr>
+        <tr><td>15</td><td class="mono">PUT</td><td class="mono">/api/v1/ordenes/{id}/estado</td><td>Cambiar el estado de una orden</td><td class="mono">200, 400, 404, 409, 413, 415</td></tr>
+        <tr><td>16</td><td class="mono">GET</td><td class="mono">/api/v1/ordenes/{id}/items</td><td>Listar los ítems de una orden</td><td class="mono">200, 404</td></tr>
+        <tr><td>17</td><td class="mono">POST</td><td class="mono">/api/v1/ordenes/{id}/items</td><td>Agregar un ítem a una orden</td><td class="mono">201, 400, 404, 409, 413, 415</td></tr>
+        <tr><td>18</td><td class="mono">DELETE</td><td class="mono">/api/v1/ordenes/{id}/items/{itemId}</td><td>Quitar un ítem de una orden</td><td class="mono">204, 404, 409</td></tr>
+        <tr><td>19</td><td class="mono">GET</td><td class="mono">/api/v1/reportes/resumen</td><td>Indicadores generales</td><td class="mono">200</td></tr>
+        <tr><td>20</td><td class="mono">GET</td><td class="mono">/api/v1/reportes/facturacion-mensual</td><td>Facturación por mes</td><td class="mono">200, 400</td></tr>
+        <tr><td>21</td><td class="mono">GET</td><td class="mono">/api/v1/reportes/costos-por-vehiculo</td><td>Costo de mantenimiento por unidad</td><td class="mono">200, 400</td></tr>
+        <tr><td>22</td><td class="mono">GET</td><td class="mono">/api/v1/reportes/service-vencido</td><td>Unidades con el service vencido</td><td class="mono">200, 400</td></tr>
+    </tbody>
+</table>
+
+<h3>4.1. Correspondencia entre operación, verbo y código de éxito</h3>
+
+<p>El contrato sigue la correspondencia habitual entre la intención de la operación y el par
+verbo/código de estado, en lugar de devolver <code>200 OK</code> para todo:</p>
+
+<table>
+    <thead>
+        <tr><th style="width:58mm">Operación</th><th class="col-verbo">Verbo</th><th style="width:36mm">Código de éxito</th><th>Endpoints</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>Obtener un recurso o una colección</td><td class="mono">GET</td><td class="sc sc--2xx">200 OK</td><td>01–03, 05, 09, 10, 12, 16, 19–22</td></tr>
+        <tr><td>Crear un recurso nuevo</td><td class="mono">POST</td><td class="sc sc--2xx">201 Created</td><td>04, 11, 17</td></tr>
+        <tr><td>Reemplazar un recurso completo</td><td class="mono">PUT</td><td class="sc sc--2xx">200 OK</td><td>06, 15</td></tr>
+        <tr><td>Modificar parcialmente un recurso</td><td class="mono">PATCH</td><td class="sc sc--2xx">200 OK</td><td>07, 13</td></tr>
+        <tr><td>Eliminar un recurso</td><td class="mono">DELETE</td><td class="sc sc--2xx">204 No Content</td><td>08, 14, 18</td></tr>
+    </tbody>
+</table>
+
+</section>
+
+<!-- ==================== VERIFICACIÓN ==================== -->
+
+<section class="seccion">
+
+<h2 class="titulo-seccion"><span>5.</span>Verificación del contrato</h2>
+
+<p>Los códigos de estado de este documento no se listaron a partir de una lectura del código, sino
+que <strong>cada uno fue provocado con un request real</strong> contra la implementación y se
+verificó la respuesta obtenida. El procedimiento fue el siguiente:</p>
+
+<ol>
+    <li>Se recorrieron los archivos de rutas, controladores, servicios y middlewares para
+        identificar todos los códigos alcanzables en cada endpoint.</li>
+    <li>Se construyó un caso de prueba por cada par <em>(endpoint, código de estado)</em>,
+        partiendo siempre del mismo set de datos inicial.</li>
+    <li>Se ejecutaron los 82 casos comparando el código obtenido contra el declarado.</li>
+</ol>
+
+<p>La primera corrida detectó <strong>tres discrepancias</strong> entre el contrato pretendido y el
+comportamiento real, que fueron corregidas en la implementación:</p>
+
+<table>
+    <thead>
+        <tr><th style="width:40mm">Endpoint</th><th style="width:38mm">Caso</th><th style="width:20mm">Declarado</th><th style="width:20mm">Obtenido</th><th>Diagnóstico y corrección</th></tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="mono">GET /ordenes</td>
+            <td class="mono">?desde=xxx</td>
+            <td class="sc sc--4xx">400</td>
+            <td class="sc sc--5xx">500</td>
+            <td>Una fecha no interpretable llegaba sin validar hasta el filtrado, donde
+                <code>toISOString()</code> lanzaba una excepción no contemplada. Se agregó la
+                validación previa del parámetro, que ahora devuelve <code>400</code> indicando el
+                campo</td>
+        </tr>
+        <tr>
+            <td class="mono">GET /ordenes</td>
+            <td class="mono">?hasta=xxx</td>
+            <td class="sc sc--4xx">400</td>
+            <td class="sc sc--5xx">500</td>
+            <td>Mismo caso que el anterior</td>
+        </tr>
+        <tr>
+            <td class="mono">POST /api/v1</td>
+            <td>Verbo no soportado</td>
+            <td class="sc sc--4xx">405</td>
+            <td class="sc sc--4xx">404</td>
+            <td>El índice de la API no tenía declarados sus verbos admitidos, por lo que respondía
+                <code>404</code> donde el resto de la API responde <code>405</code>. Se unificó el
+                comportamiento</td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="nota">
+    Devolver <code>500</code> ante una fecha mal escrita era un defecto y no una decisión: le
+    comunica al cliente que el servidor falló, cuando en realidad el dato enviado era inválido y
+    él puede corregirlo. Un error de validación debe reflejarse en el rango <code>4xx</code>.
+</div>
+
+<p>Tras las correcciones, los <strong>82 casos coinciden</strong> con lo documentado.</p>
+
+<h3>5.1. Cómo se hizo repetible la verificación</h3>
+
+<p>Los 82 casos no quedaron como una comprobación puntual: se incorporaron al código del backend
+como una suite de pruebas automatizadas (<code>tests/contrato-api.test.js</code>), ejecutable con
+<code>npm test</code>. Cada caso afirma un código de estado de este documento, de modo que si
+alguien modifica un endpoint sin actualizar la documentación, la suite se pone en rojo.</p>
+
+<p>La suite completa del backend contiene <strong>178 pruebas</strong>, de las cuales
+<strong>88 corresponden a la verificación del contrato</strong> documentado en estas páginas.</p>
+
+<div class="nota">
+    <strong>Sobre el código del backend.</strong> La implementación que este documento describe
+    —incluida la suite de verificación— se incorporará a este repositorio junto con el Trabajo
+    Práctico Integrador, en la instancia correspondiente de la cursada. Esta entrega comprende la
+    documentación del contrato.
+</div>
+
+<h3>5.2. Especificación OpenAPI</h3>
+
+<p>El mismo contrato está publicado además como una especificación
+<strong>OpenAPI 3.0.3</strong> en el archivo <code>openapi.yaml</code> que acompaña a este
+documento. Se puede abrir en <code>editor.swagger.io</code> para obtener documentación navegable y
+probar cada endpoint contra el servidor local. La especificación fue validada con el linter
+<em>Redocly</em> y no presenta errores.</p>
+
+<h3>5.3. Documentación en el repositorio</h3>
+
+<p>El contenido de este documento está también integrado, en formato Markdown, en el
+<code>README.md</code> de esta misma carpeta del repositorio.</p>
+
+</section>
+
+</body>
+</html>
